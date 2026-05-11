@@ -1,0 +1,57 @@
+[project]
+name = "aerolake"
+version = "0.1.0"
+description = "AeroLake: Data Pipeline & Data Lake Dashboard"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "azure-functions>=2.1.0",
+    "azure-storage-blob>=12.28.0",
+    "duckdb>=1.5.2",
+    "plotly>=6.7.0",
+    "polars>=1.40.1",
+    "pydantic>=2.13.4",
+    "requests>=2.33.1",
+    "streamlit>=1.57.0",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.0",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "responses>=0.26.0",
+    "ruff>=0.15.12",
+]
+
+[tool.ruff]
+target-version = "py314"
+
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors (np. zła ilość spacji)
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes (np. zaimportowano pakiet, ale go nie użyto)
+    "I",   # isort ( automatycznie sortuje i grupuje importy)
+    "B",   # flake8-bugbear (wykrywa popularne pułapki i błędy logiczne w Pythonie)
+    "UP",  # pyupgrade (wymusza używanie najnowszych i najszybszych funkcji Pythona 3.11)
+    "N",   # pep8-naming (pilnuje, by klasy były PascalCase, a funkcje snake_case)
+    "C90", # mccabe (pilnuje, by funkcje nie były zbyt skomplikowane i zagnieżdżone)
+]
+
+ignore = [
+    # E501 to ostrzeżenie o zbyt długiej linii. Wyłączamy to w linterze,
+    # ponieważ formater (ruff format) i tak sam połamie linie tam, gdzie to możliwe,
+    # a my nie chcemy ostrzeżeń dla długich linków URL w kodzie.
+    "E501",
+]
+
+[tool.ruff.lint.mccabe]
+# Jeśli funkcja ma więcej niż 10 punktów złożoności (za dużo ifów/pętli), Ruff rzuci błędem.
+max-complexity = 10
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

@@ -1,0 +1,57 @@
+# =========================
+# 1. Python & Środowisko (uv)
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+# Uwaga: Plik uv.lock oraz pyproject.toml MUSZĄ być śledzone przez Git, dlatego ich tu nie ma.
+
+# =========================
+# 2. Zmienne Środowiskowe & Sekrety
+# =========================
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# =========================
+# 3. Azure Functions (Lokalne)
+# =========================
+.azure/
+local.settings.json
+__blobstorage__/
+__queuestorage__/
+__azurite_db*__.json
+
+# =========================
+# 4. Dane i Bazy Danych
+# =========================
+*.parquet
+*.csv
+*.duckdb
+*.duckdb.wal
+*.db
+*.sqlite3
+# Opcjonalnie: zignoruj cały folder z lokalnymi danymi tymczasowymi, jeśli taki stworzycie
+# /data/
+
+# =========================
+# 5. Testy, Lintery i Pokrycie Kodu
+# =========================
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# =========================
+# 6. IDE i System Operacyjny
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

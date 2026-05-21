@@ -1,7 +1,7 @@
 ## Szybki Start (Uruchomienie Lokalne)
 
 ### 1. Wymagania wstępne
-* Zainstalowany [Python 3.14+](https://www.python.org/downloads/)
+* Zainstalowany [Python 3.13+](https://www.python.org/downloads/)
 * Zainstalowane narzędzie **uv**. Jeśli go nie masz, uruchom:
   * Mac/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`
   * Windows: `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"`
@@ -41,6 +41,32 @@ cd data_pipeline
 func start
 ```
 
+## Narzędzia i Jakość Kodu
+
+W projekcie używamy `ruff` do lintowania i formatowania kodu oraz `pre-commit` do automatyzacji tych procesów.
+
+### Instalacja Pre-commit
+
+Po zainstalowaniu zależności (`uv sync`), aktywuj pre-commit w swoim lokalnym repozytorium:
+
+```bash
+uv run pre-commit install
+```
+
+Od teraz `ruff` będzie automatycznie sprawdzał i formatował Twój kod przed każdym commitem.
+
+### Ręczne Uruchamianie Narzędzi
+
+Jeśli chcesz ręcznie uruchomić linter lub formater na całym projekcie:
+
+```bash
+# Sprawdzenie błędów i stylu kodu
+uv run ruff check .
+
+# Automatyczne formatowanie plików
+uv run ruff format .
+```
+
 ## Struktura projektu
 
 ```text
@@ -63,7 +89,7 @@ AeroLake/
 │   └── test_frontend.py         # Testy wczytywania i widoków
 ├── .env.example                 # Szablon wymaganych zmiennych środowiskowych
 ├── .gitignore                   # Pliki ignorowane przez system kontroli wersji
-├── .python-version              # Deklaracja wersji Pythona dla narzędzia uv (np. 3.14)
+├── .python-version              # Deklaracja wersji Pythona dla narzędzia uv (np. 3.13)
 ├── pyproject.toml               # Główna konfiguracja projektu, zależności i linterów (Ruff)
 ├── uv.lock                      # Plik lockujący precyzyjne wersje pakietów (dla powtarzalności)
 └── README.md                    # Dokumentacja główna projektu

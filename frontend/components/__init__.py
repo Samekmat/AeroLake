@@ -1,1 +1,0 @@
-# Komponenty wielokrotnego użytku (wykresy, tabele)

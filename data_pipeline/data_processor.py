@@ -8,7 +8,7 @@ from data_pipeline.api_client import fetch_airlabs_schedules
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
-def transform_schedules(raw_data: list[dict]) -> pl.DataFrame | None:
+def transform_schedules(raw_data: list[dict]) -> pl.DataFrame:
     """
     Transforms raw API dictionaries into a cleaned Polars DataFrame.
 
@@ -20,18 +20,18 @@ def transform_schedules(raw_data: list[dict]) -> pl.DataFrame | None:
 
     df = pl.DataFrame(raw_data)
 
-    df_clean = df.select([
-        pl.col("flight_iata").alias("flight_code"),
-        pl.col("status").cast(pl.Utf8),
-        pl.col("dep_iata").alias("departure_airport"),
-        pl.col("arr_iata").alias("arrival_airport"),
-
-        pl.from_epoch(pl.col("dep_time_ts"), time_unit="s").alias("scheduled_departure_utc"),
-        pl.from_epoch(pl.col("arr_time_ts"), time_unit="s").alias("scheduled_arrival_utc"),
-
-        pl.col("dep_delayed").cast(pl.Int32).fill_null(0).alias("departure_delay_mins"),
-        pl.col("arr_delayed").cast(pl.Int32).fill_null(0).alias("arrival_delay_mins"),
-    ])
+    df_clean = df.select(
+        [
+            pl.col("flight_iata").alias("flight_code"),
+            pl.col("status").cast(pl.Utf8),
+            pl.col("dep_iata").alias("departure_airport"),
+            pl.col("arr_iata").alias("arrival_airport"),
+            pl.from_epoch(pl.col("dep_time_ts"), time_unit="s").alias("scheduled_departure_utc"),
+            pl.from_epoch(pl.col("arr_time_ts"), time_unit="s").alias("scheduled_arrival_utc"),
+            pl.col("dep_delayed").cast(pl.Int32).fill_null(0).alias("departure_delay_mins"),
+            pl.col("arr_delayed").cast(pl.Int32).fill_null(0).alias("arrival_delay_mins"),
+        ]
+    )
 
     df_clean = df_clean.drop_nulls(subset=["departure_airport", "arrival_airport"])
 

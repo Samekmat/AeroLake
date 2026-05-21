@@ -18,7 +18,7 @@ uv sync
 ```
 
 ### 3. Zmienne środowiskowe
-Skopiuj plik z przykładowymi zmiennymi i uzupełnij swoje dane uwierzytelniające (klucz do AviationStack API oraz connection string do Azure Blob Storage):
+Skopiuj plik z przykładowymi zmiennymi i uzupełnij swoje dane uwierzytelniające (klucz do AIRLABS API oraz connection string do Azure Blob Storage):
 
 ```bash
 cp .env.example .env
@@ -48,7 +48,7 @@ AeroLake/
 ├── .github/workflows/           # Automatyzacja CI/CD (testy i lintery w GitHub Actions)
 ├── data_pipeline/               # Warstwa Ingestion[pobieranie danych] & Processing (Azure Functions)
 │   ├── function_app.py          # Główny punkt wejścia dla Azure
-│   ├── api_client.py            # Klient HTTP dla AviationStack API
+│   ├── api_client.py            # Klient HTTP dla AIRLABS API
 │   └── data_processor.py        # Logika czyszczenia danych i kalkulacji (Polars)
 ├── frontend/                    # Warstwa Wizualizacji (Streamlit)
 │   ├── app.py                   # Główny plik aplikacji i interfejs UI
@@ -74,7 +74,7 @@ AeroLake/
 ```mermaid
 graph TD
     subgraph SG1 [1. Źródło Danych]
-        API[AviationStack API]
+        API[AIRLABS API]
     end
 
     subgraph SG2 [2. Chmura Azure - Data Pipeline]

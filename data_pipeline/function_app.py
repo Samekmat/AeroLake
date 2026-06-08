@@ -2,7 +2,8 @@ import logging
 
 import azure.functions as func
 
-from data_pipeline.data_processor import process_silver_layer
+from config import Config
+from data_processor import process_silver_layer
 
 app = func.FunctionApp()
 
@@ -13,6 +14,7 @@ app = func.FunctionApp()
     schedule="0 */30 * * * *", arg_name="timer", run_on_startup=False, use_monitor=False
 )
 def silver_layer_timer_trigger(timer: func.TimerRequest) -> None:
+    Config.validate()
     logging.info("Executing AeroLake Silver Layer Data Pipeline (Timer Trigger)...")
 
     if timer.past_due:

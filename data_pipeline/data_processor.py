@@ -1,17 +1,12 @@
 import logging
 
-from core.config import Config
-from data_pipeline.azure_io import (
-    get_blob_service_client,
-    load_all_dictionaries,
-    read_raw_blobs_to_dataframe,
-    upload_partitioned_dataframe,
-)
-from data_pipeline.transformers import (
-    clean_and_transform_flights,
-    clean_and_transform_schedules,
-    clean_and_transform_weather,
-)
+from azure_io import (get_blob_service_client, load_all_dictionaries,
+                      read_raw_blobs_to_dataframe,
+                      upload_partitioned_dataframe)
+from config import Config
+from transformers import (clean_and_transform_flights,
+                          clean_and_transform_schedules,
+                          clean_and_transform_weather)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 

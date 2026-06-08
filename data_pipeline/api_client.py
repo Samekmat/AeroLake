@@ -2,7 +2,10 @@ import logging
 import os
 
 import requests
-from dotenv import load_dotenv
+
+# from dotenv import load_dotenv
+# api_key = os.getenv("AIRLABS_API_KEY")
+api_key = os.getenv("AIRLABS_API_KEY_MS") 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -11,8 +14,7 @@ def fetch_airlabs_schedules(limit: int = 100, dep_iata: str = "KRK") -> list[dic
     """
     Fetches planned flight data (schedules) from the AirLabs API.
     """
-    load_dotenv()
-    api_key = os.getenv("AIRLABS_API_KEY")
+
 
     if not api_key:
         raise ValueError(
@@ -49,8 +51,7 @@ def fetch_airlabs_airports(iata_code: str = None) -> list[dict]:
     Fetches airports dictionary from the AirLabs API.
     If iata_code is provided, fetches only that specific airport.
     """
-    load_dotenv()
-    api_key = os.getenv("AIRLABS_API_KEY")
+
     if not api_key:
         raise ValueError("AIRLABS_API_KEY missing from environment variables.")
 
@@ -76,8 +77,7 @@ def fetch_airlabs_fleets(airline_iata: str = None) -> list[dict]:
     Fetches fleets dictionary from the AirLabs API.
     If airline_iata is provided, fetches fleets for that specific airline.
     """
-    load_dotenv()
-    api_key = os.getenv("AIRLABS_API_KEY")
+
     if not api_key:
         raise ValueError("AIRLABS_API_KEY missing from environment variables.")
 
@@ -103,8 +103,7 @@ def fetch_airlabs_airlines(iata_code: str = None) -> list[dict]:
     Fetches airlines dictionary from the AirLabs API.
     If iata_code is provided, fetches that specific airline.
     """
-    load_dotenv()
-    api_key = os.getenv("AIRLABS_API_KEY")
+
     if not api_key:
         raise ValueError("AIRLABS_API_KEY missing from environment variables.")
 

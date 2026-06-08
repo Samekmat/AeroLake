@@ -36,8 +36,9 @@ Aplikacja będzie dostępna w przeglądarce pod adresem: `http://localhost:8501`
 ### 5. Uruchamianie Azure Function (Data Pipeline)
 *(Wymaga zainstalowanego [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local))*
 
+Uruchom bezpośrednio w głównym katalogu projektu:
+
 ```bash
-cd data_pipeline
 func start
 ```
 
@@ -71,11 +72,13 @@ uv run ruff format .
 
 ```text
 AeroLake/
-├── .github/workflows/           # Automatyzacja CI/CD (testy i lintery w GitHub Actions)
-├── data_pipeline/               # Warstwa Ingestion[pobieranie danych] & Processing (Azure Functions)
-│   ├── function_app.py          # Główny punkt wejścia dla Azure
+├── data_pipeline/               # Logika przetwarzania danych Silver
+│   ├── azure_io.py              # Operacje wejścia-wyjścia na Azure Blob Storage
+│   ├── polars_helpers.py        # Helpery wyrównywania schematów Polars
+│   ├── transformers.py          # Logika czyszczenia schedules, flights, weather
 │   ├── api_client.py            # Klient HTTP dla AIRLABS API
-│   └── data_processor.py        # Logika czyszczenia danych i kalkulacji (Polars)
+│   ├── data_processor.py        # Główny koordynator/orchestrator pipeline'u
+│   └── data/                    # Lokalna kopia czystych Parquetów (zignorowana w Git)
 ├── frontend/                    # Warstwa Wizualizacji (Streamlit)
 │   ├── app.py                   # Główny plik aplikacji i interfejs UI
 │   ├── components/              # Komponenty wielokrotnego użytku (wykresy, tabele)
@@ -89,7 +92,11 @@ AeroLake/
 │   └── test_frontend.py         # Testy wczytywania i widoków
 ├── .env.example                 # Szablon wymaganych zmiennych środowiskowych
 ├── .gitignore                   # Pliki ignorowane przez system kontroli wersji
+├── .funcignore                  # Wykluczenia plików przed deployem na Azure
 ├── .python-version              # Deklaracja wersji Pythona dla narzędzia uv (np. 3.13)
+├── function_app.py              # Główny punkt wejścia dla Azure Functions
+├── host.json                    # Konfiguracja runtime Azure Functions
+├── local.settings.json          # Lokalne zmienne środowiskowe dla Azure Functions (ignorowane)
 ├── pyproject.toml               # Główna konfiguracja projektu, zależności i linterów (Ruff)
 ├── uv.lock                      # Plik lockujący precyzyjne wersje pakietów (dla powtarzalności)
 └── README.md                    # Dokumentacja główna projektu

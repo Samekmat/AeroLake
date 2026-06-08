@@ -51,7 +51,8 @@ coverage.xml
 # =========================
 # 6. IDE i System Operacyjny
 # =========================
-.vscode/
+
 .idea/
 .DS_Store
 Thumbs.db
+.python_packages

@@ -7,10 +7,10 @@ from data_pipeline.data_processor import process_silver_layer
 app = func.FunctionApp()
 
 
-# Timer trigger executing every 30 minutes
-# Cron expression: 0 */30 * * * *
+# Timer trigger executing every hour (15 minutes after the hour)
+# Cron expression: 0 15 * * * *
 @app.timer_trigger(
-    schedule="0 */30 * * * *", arg_name="timer", run_on_startup=False, use_monitor=False
+    schedule="0 15 * * * *", arg_name="timer", run_on_startup=False, use_monitor=False
 )
 def silver_layer_timer_trigger(timer: func.TimerRequest) -> None:
     logging.info("Executing AeroLake Silver Layer Data Pipeline (Timer Trigger)...")

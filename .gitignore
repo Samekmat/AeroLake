@@ -53,6 +53,15 @@ coverage.xml
 # =========================
 
 .idea/
+.vscode/
 .DS_Store
 Thumbs.db
 .python_packages
+
+# =========================
+# 7. AI Agents & Skills
+# =========================
+.agents/
+skills-lock.json
+scratch/
+

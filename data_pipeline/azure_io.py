@@ -5,10 +5,13 @@ import logging
 import polars as pl
 from azure.storage.blob import BlobServiceClient
 
-from api_client import (fetch_airlabs_airlines, fetch_airlabs_airports,
-                        fetch_airlabs_fleets)
-from config import Config
-from polars_helpers import align_dataframe_schemas, flatten_dict
+from core.config import Config
+from data_pipeline.api_client import (
+    fetch_airlabs_airlines,
+    fetch_airlabs_airports,
+    fetch_airlabs_fleets,
+)
+from data_pipeline.polars_helpers import align_dataframe_schemas, flatten_dict
 
 
 def get_blob_service_client() -> BlobServiceClient:

@@ -3,9 +3,8 @@ import os
 
 import requests
 
-# from dotenv import load_dotenv
 # api_key = os.getenv("AIRLABS_API_KEY")
-api_key = os.getenv("AIRLABS_API_KEY_MS") 
+api_key = os.getenv("AIRLABS_API_KEY_MS")
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -14,7 +13,6 @@ def fetch_airlabs_schedules(limit: int = 100, dep_iata: str = "KRK") -> list[dic
     """
     Fetches planned flight data (schedules) from the AirLabs API.
     """
-
 
     if not api_key:
         raise ValueError(

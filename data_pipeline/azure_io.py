@@ -178,6 +178,42 @@ def read_raw_blobs_to_dataframe(
     return pl.concat(standardized_dfs)
 
 
+def read_parquet_blobs_to_dataframe(
+    blob_service_client: BlobServiceClient, container_name: str, prefix: str
+) -> pl.DataFrame:
+    """
+    Downloads and combines Parquet blobs from a container under a prefix into a Polars DataFrame.
+    """
+    container_client = blob_service_client.get_container_client(container_name)
+    blobs = container_client.list_blobs(name_starts_with=prefix)
+
+    is_exact_file = prefix.endswith(".parquet")
+    dfs = []
+
+    for b in blobs:
+        if b.size == 0 or not b.name.endswith(".parquet"):
+            continue
+
+        if is_exact_file and b.name != prefix:
+            continue
+
+        try:
+            blob_client = container_client.get_blob_client(b.name)
+            buffer = io.BytesIO()
+            blob_client.download_blob().readinto(buffer)
+            buffer.seek(0)
+            dfs.append(pl.read_parquet(buffer))
+        except Exception as e:
+            logging.error(f"Error reading parquet blob {b.name}: {e}")
+
+    if not dfs:
+        logging.warning(f"No parquet data frames loaded for prefix {prefix}")
+        return pl.DataFrame()
+
+    standardized_dfs = align_dataframe_schemas(dfs)
+    return pl.concat(standardized_dfs)
+
+
 def upload_partitioned_dataframe(
     container_client, df: pl.DataFrame, date_col: str, base_prefix: str
 ):
@@ -224,3 +260,18 @@ def upload_partitioned_dataframe(
         logging.info(
             f"Successfully uploaded partition: {blob_path} ({clean_part_df.shape[0]} rows)"
         )
+
+
+def upload_dataframe_to_blob(container_client, df: pl.DataFrame, blob_path: str):
+    """Uploads a single DataFrame as a Parquet blob."""
+    if df.is_empty():
+        logging.warning(f"DataFrame for blob {blob_path} is empty. Skipping upload.")
+        return
+
+    buffer = io.BytesIO()
+    df.write_parquet(buffer)
+    buffer.seek(0)
+
+    blob_client = container_client.get_blob_client(blob_path)
+    blob_client.upload_blob(buffer.getvalue(), overwrite=True)
+    logging.info(f"Successfully uploaded gold dataset: {blob_path} ({df.shape[0]} rows)")

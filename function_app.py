@@ -3,6 +3,7 @@ import logging
 import azure.functions as func
 
 from data_pipeline.data_processor import process_silver_layer
+from data_pipeline.gold_processor import process_gold_layer
 from data_pipeline.ingest_airlabs import run_flights_ingestion, run_schedules_ingestion
 from data_pipeline.ingest_weather import run_weather_ingestion
 
@@ -51,13 +52,14 @@ def weather_timer_trigger(timer: func.TimerRequest) -> None:
     schedule="0 15 * * * *", arg_name="timer", run_on_startup=False, use_monitor=False
 )
 def silver_layer_timer_trigger(timer: func.TimerRequest) -> None:
-    logging.info("Executing AeroLake Silver Layer Data Pipeline (Timer Trigger)...")
+    logging.info("Executing AeroLake Silver and Gold Layer Data Pipeline (Timer Trigger)...")
     if timer.past_due:
         logging.warning("The timer is running past due.")
 
     try:
         process_silver_layer()
-        logging.info("AeroLake Silver Layer Data Pipeline executed successfully.")
+        process_gold_layer()
+        logging.info("AeroLake Silver and Gold Layer Data Pipeline executed successfully.")
     except Exception as e:
-        logging.error(f"Critical failure in AeroLake Silver Layer execution: {e}")
+        logging.error(f"Critical failure in AeroLake Silver/Gold Layer execution: {e}")
         raise

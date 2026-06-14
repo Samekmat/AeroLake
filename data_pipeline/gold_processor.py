@@ -11,7 +11,7 @@ import logging  # noqa: E402
 import polars as pl  # noqa: E402
 
 FLIGHT_SCHEDULE_MATCH_TOLERANCE = "12h"
-WEATHER_MATCH_TOLERANCE = "30m"
+WEATHER_MATCH_TOLERANCE = "1h"
 
 
 def _optional_column(df: pl.DataFrame, column_name: str, dtype: pl.DataType) -> pl.Expr:

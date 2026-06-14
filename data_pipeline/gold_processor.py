@@ -55,7 +55,8 @@ def build_schedule_flight_facts(
         ]
     ).sort(["flight_code", "last_updated_utc"])
 
-    # 12h tolerance keeps the daily recurring flight code aligned with the proper departure instance.
+    # 12h tolerance keeps the daily recurring flight code aligned
+    # with the proper departure instance.
     return schedules.join_asof(
         flights,
         left_on="scheduled_departure_utc",

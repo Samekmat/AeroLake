@@ -130,10 +130,7 @@ def build_airline_performance(
         base.group_by(["airline_code", "airline_name"])
         .agg(
             [
-                pl.col("departure_delay_mins")
-                .mean()
-                .round(2)
-                .alias("avg_departure_delay_mins"),
+                pl.col("departure_delay_mins").mean().round(2).alias("avg_departure_delay_mins"),
                 pl.len().alias("total_flights"),
             ]
         )

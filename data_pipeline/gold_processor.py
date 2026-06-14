@@ -1,6 +1,14 @@
-import logging
+import os
+import sys
 
-import polars as pl
+# Dynamic inclusion of parent directory for Python path lookup
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+import logging  # noqa: E402
+
+import polars as pl  # noqa: E402
 
 FLIGHT_SCHEDULE_MATCH_TOLERANCE = "12h"
 WEATHER_MATCH_TOLERANCE = "30m"

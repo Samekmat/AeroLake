@@ -4,13 +4,14 @@ from pathlib import Path
 
 import streamlit as st
 
+from frontend import data_loader
+from frontend.components import analytics, flights, map_view
+from frontend.styles import inject_streamlit_css
+
 ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from frontend import data_loader
-from frontend.components import analytics, flights, map_view
-from frontend.styles import inject_streamlit_css
 
 st.set_page_config(
     page_title="AeroLake",

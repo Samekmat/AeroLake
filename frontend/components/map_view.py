@@ -15,9 +15,7 @@ PLANE_ICON_SIZE = 64
 PLANE_ICON_ANCHOR = PLANE_ICON_SIZE // 2
 PLANE_IMG_SIZE = 48
 PLANE_ICON_BEARING_OFFSET = -45
-PLANE_EMOJI_URL = (
-    "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2708.png"
-)
+PLANE_EMOJI_URL = "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2708.png"
 
 
 class _FlightTimeSlider(MacroElement):
@@ -82,6 +80,7 @@ def _path_points(path_df: pd.DataFrame) -> list[dict]:
         }
         for index, row in ordered.iterrows()
     ]
+
 
 def _add_map_styles(folium_map: folium.Map) -> None:
     folium_map.get_root().header.add_child(folium_style_element("map.css"))
@@ -153,20 +152,22 @@ def _show_map(folium_map: folium.Map, map_key: str) -> None:
 def render(flights_df: pd.DataFrame, arrivals_df: pd.DataFrame):
     st.subheader("Mapa lotu")
 
-    selected_flight = st.text_input(
-        "Numer lotu",
-        value="",
-        placeholder="np. FR123",
-        key="map_selected_flight",
-    ).strip().upper()
+    selected_flight = (
+        st.text_input(
+            "Numer lotu",
+            value="",
+            placeholder="np. FR123",
+            key="map_selected_flight",
+        )
+        .strip()
+        .upper()
+    )
 
     if not selected_flight:
         _show_map(_build_krk_map(), map_key="krk_map")
         return
 
-    track_pl = pick_flight_track(
-        to_polars(flights_df), to_polars(arrivals_df), selected_flight
-    )
+    track_pl = pick_flight_track(to_polars(flights_df), to_polars(arrivals_df), selected_flight)
     if track_pl.is_empty():
         st.info(f"Brak danych trasy dla lotu {selected_flight}.")
         _show_map(_build_krk_map(), map_key="krk_map")

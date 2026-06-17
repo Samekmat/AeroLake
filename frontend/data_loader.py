@@ -119,9 +119,7 @@ def read_raw_arrivals_partition_range(
     return _read_partition_range(start_date, end_date, load_day)
 
 
-def transform_raw_arrivals(
-    raw_df: pl.DataFrame, airports_df: pl.DataFrame
-) -> pl.DataFrame:
+def transform_raw_arrivals(raw_df: pl.DataFrame, airports_df: pl.DataFrame) -> pl.DataFrame:
     """Cleans raw arrival snapshots for the frontend arrivals table."""
     if raw_df.is_empty():
         return pl.DataFrame()
@@ -139,9 +137,9 @@ def transform_raw_arrivals(
             pl.col("airline_iata").alias("airline_code"),
             pl.col("lat").cast(pl.Float64),
             pl.col("lng").cast(pl.Float64),
-            pl.from_epoch(
-                pl.col(updated_col).cast(pl.Float64).cast(pl.Int64), time_unit="s"
-            ).alias("last_updated_utc"),
+            pl.from_epoch(pl.col(updated_col).cast(pl.Float64).cast(pl.Int64), time_unit="s").alias(
+                "last_updated_utc"
+            ),
         ]
     )
 
@@ -233,15 +231,17 @@ def _weekday_stats_from_timestamp(
         .agg(pl.len().alias("daily_count"))
     )
 
-    return daily.group_by("weekday").agg(
-        pl.col("daily_count").sum().alias("flight_count"),
-        pl.col("daily_count").mean().alias("avg_flights_per_day"),
-    ).with_columns(pl.lit(direction).alias("direction"))
+    return (
+        daily.group_by("weekday")
+        .agg(
+            pl.col("daily_count").sum().alias("flight_count"),
+            pl.col("daily_count").mean().alias("avg_flights_per_day"),
+        )
+        .with_columns(pl.lit(direction).alias("direction"))
+    )
 
 
-def compute_weekday_patterns(
-    schedules_df: pl.DataFrame, arrivals_df: pl.DataFrame
-) -> pl.DataFrame:
+def compute_weekday_patterns(schedules_df: pl.DataFrame, arrivals_df: pl.DataFrame) -> pl.DataFrame:
     """Flight counts by weekday: total sum and average per calendar day."""
     weekday_labels = {
         1: "Poniedziałek",
@@ -254,9 +254,7 @@ def compute_weekday_patterns(
     }
 
     frames = [
-        _weekday_stats_from_timestamp(
-            schedules_df, "scheduled_departure_utc", "Z Krakowa"
-        ),
+        _weekday_stats_from_timestamp(schedules_df, "scheduled_departure_utc", "Z Krakowa"),
         _weekday_stats_from_timestamp(arrivals_df, "last_updated_utc", "Do Krakowa"),
     ]
     frames = [frame for frame in frames if not frame.is_empty()]
@@ -266,9 +264,7 @@ def compute_weekday_patterns(
 
     result = pl.concat(frames, how="vertical")
     return result.with_columns(
-        pl.col("weekday")
-        .replace_strict(weekday_labels, default="Nieznany")
-        .alias("weekday_label")
+        pl.col("weekday").replace_strict(weekday_labels, default="Nieznany").alias("weekday_label")
     ).sort(["direction", "weekday"])
 
 
@@ -337,7 +333,9 @@ def _latest_flight_segment(df: pl.DataFrame, max_gap_hours: float) -> pl.DataFra
         df.sort("last_updated_utc")
         .with_columns(pl.col("last_updated_utc").diff().dt.total_hours().alias("gap_hours"))
         .with_columns(pl.col("gap_hours").fill_null(0.0).alias("gap_hours"))
-        .with_columns((pl.col("gap_hours") > max_gap_hours).cast(pl.Int64).cum_sum().alias("segment_id"))
+        .with_columns(
+            (pl.col("gap_hours") > max_gap_hours).cast(pl.Int64).cum_sum().alias("segment_id")
+        )
     )
     latest_segment = segmented["segment_id"].max()
     return segmented.filter(pl.col("segment_id") == latest_segment).drop(
@@ -446,18 +444,14 @@ def _enrich_arrivals_with_airlines(arrivals_df: pl.DataFrame) -> pl.DataFrame:
 def load_schedules():
     client = get_cached_blob_client()
     today = datetime.now(LOCAL_TZ).date()
-    return read_silver_partition_range(
-        client, "schedules", DATA_START_DATE, today
-    ).to_pandas()
+    return read_silver_partition_range(client, "schedules", DATA_START_DATE, today).to_pandas()
 
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner="Wczytywanie pozycji live...")
 def load_live_flights():
     client = get_cached_blob_client()
     today = datetime.now(LOCAL_TZ).date()
-    return read_silver_partition_range(
-        client, "flights", DATA_START_DATE, today
-    ).to_pandas()
+    return read_silver_partition_range(client, "flights", DATA_START_DATE, today).to_pandas()
 
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner="Wczytywanie przylotów...")

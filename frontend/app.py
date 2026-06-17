@@ -85,9 +85,7 @@ def _render_flight_filters(*, show_dates: bool) -> tuple[str, str, date, date]:
     with text_cols[0]:
         st.text_input("Filtr linii lotniczej", value="", key="filter_airline")
     with text_cols[1]:
-        st.text_input(
-            "Filtr lotniska (cel / pochodzenie)", value="", key="filter_airport"
-        )
+        st.text_input("Filtr lotniska (cel / pochodzenie)", value="", key="filter_airport")
 
     st.button(
         "Wyczyść",
@@ -180,9 +178,7 @@ elif current_tab == tab_historical:
         arrivals_all, "last_updated_utc", start_date, end_date
     )
 
-    avg_delay = _column_stat(
-        schedules_historical, "departure_delay_mins", lambda col: col.mean()
-    )
+    avg_delay = _column_stat(schedules_historical, "departure_delay_mins", lambda col: col.mean())
     active_routes_count = _column_stat(
         schedules_historical, "arrival_airport", lambda col: col.nunique()
     )
@@ -190,9 +186,7 @@ elif current_tab == tab_historical:
     kpi_cols = st.columns(4)
     kpi_cols[0].metric("Odloty z Krakowa", len(schedules_historical))
     kpi_cols[1].metric("Przyloty do Krakowa", len(arrivals_historical))
-    kpi_cols[2].metric(
-        "Średnie opóźnienie (min)", f"{avg_delay:.1f}" if avg_delay else "0.0"
-    )
+    kpi_cols[2].metric("Średnie opóźnienie (min)", f"{avg_delay:.1f}" if avg_delay else "0.0")
     kpi_cols[3].metric("Aktywne kierunki", active_routes_count)
 
     flights.render(

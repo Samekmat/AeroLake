@@ -48,9 +48,7 @@ ARRIVAL_COLUMN_LABELS = {
 }
 
 
-def _column_config(
-    df: pd.DataFrame, labels: dict[str, str]
-) -> dict[str, st.column_config.Column]:
+def _column_config(df: pd.DataFrame, labels: dict[str, str]) -> dict[str, st.column_config.Column]:
     return {
         col: st.column_config.Column(label=label)
         for col, label in labels.items()

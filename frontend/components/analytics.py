@@ -33,12 +33,12 @@ def _render_delays_by_hour(schedules_df: pd.DataFrame):
         x="departure_hour_utc",
         y="avg_delay_mins",
         text="flight_count",
-        labels = {
+        labels={
             "departure_hour_utc": "Godzina odlotu (UTC)",
             "avg_delay_mins": "Średnie opóźnienie (min)",
             "flight_count": "Liczba lotów",
         },
-        title = "Średnie opóźnienia odlotów",
+        title="Średnie opóźnienia odlotów",
     )
     fig.update_traces(textposition="outside")
     st.plotly_chart(fig, use_container_width=True)
@@ -59,6 +59,7 @@ def _render_top_destinations(routes_df: pd.DataFrame):
         title="Top 10 kierunków z KRK",
     )
     st.plotly_chart(fig, use_container_width=True)
+
 
 def _render_weekday_patterns(schedules_df: pd.DataFrame, arrivals_df: pd.DataFrame):
     st.subheader("Rozkład lotów według dnia tygodnia")

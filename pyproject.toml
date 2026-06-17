@@ -8,12 +8,14 @@ dependencies = [
     "azure-functions>=2.1.0",
     "azure-storage-blob>=12.28.0",
     "duckdb>=1.5.2",
+    "folium>=0.20.0",
     "plotly>=6.7.0",
     "polars[rtcompat]>=1.40.1",
     "pydantic>=2.13.4",
     "python-dotenv>=1.2.2",
     "requests>=2.33.1",
     "streamlit>=1.57.0",
+    "streamlit-folium>=0.27.2",
 ]
 
 [dependency-groups]

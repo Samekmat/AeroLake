@@ -1,0 +1,44 @@
+section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    gap: 0 !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stButton"] {
+    margin: 0 -1rem !important;
+    width: calc(100% + 2rem);
+}
+
+section[data-testid="stSidebar"] [data-testid="stButton"] button {
+    width: 100%;
+    justify-content: flex-start;
+    border: none;
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+}
+
+section[data-testid="stSidebar"] [data-testid="stDivider"] {
+    margin: 0.75rem -1rem 0 !important;
+    width: calc(100% + 2rem);
+}
+
+section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"]:has(.st-key-refresh) {
+    gap: 0.15rem !important;
+    align-items: center !important;
+    margin-top: 0.35rem !important;
+}
+
+section[data-testid="stSidebar"] .st-key-refresh [data-testid="stButton"] {
+    margin: 0 !important;
+    width: auto !important;
+}
+
+section[data-testid="stSidebar"] .st-key-refresh [data-testid="stButton"] button {
+    width: auto !important;
+    justify-content: center !important;
+    padding: 0.1rem 0.2rem !important;
+    min-height: 1.35rem !important;
+    border: none !important;
+    border-radius: 0.25rem !important;
+    font-size: 1.05rem !important;
+    line-height: 1 !important;
+    background: transparent !important;
+}

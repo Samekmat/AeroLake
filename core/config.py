@@ -31,7 +31,3 @@ class Config:
                 f"Critical configuration error: Missing environment variables: {', '.join(missing)}"
             )
         logging.info("Configuration loaded and validated successfully.")
-
-
-# Validate config on import
-Config.validate()

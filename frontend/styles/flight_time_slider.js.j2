@@ -1,0 +1,84 @@
+{% macro script(this, kwargs) %}
+    var pathData = {{ this.path_data|tojson }};
+    var map = {{ this._parent.get_name() }};
+    var planeIconSize = {{ this.plane_icon_size }};
+    var planeIconAnchor = {{ this.plane_icon_anchor }};
+    var planeImgSize = {{ this.plane_img_size }};
+    var planeEmojiUrl = {{ this.plane_emoji_url|tojson }};
+    var bearingOffset = {{ this.bearing_offset }};
+    var controlId = {{ this.control_id|tojson }};
+
+    var trailLine = L.polyline([], {
+        color: "#2563eb",
+        weight: 5,
+        opacity: 0.9,
+    }).addTo(map);
+
+    function makePlaneIcon(bearing) {
+        var rot = bearing + bearingOffset;
+        return L.divIcon({
+            className: "aerolake-plane-marker",
+            html:
+                '<div class="aerolake-plane-rotate" style="transform:rotate(' +
+                rot +
+                'deg);">' +
+                '<img class="aerolake-plane-img" src="' +
+                planeEmojiUrl +
+                '" width="' +
+                planeImgSize +
+                '" height="' +
+                planeImgSize +
+                '" alt="" draggable="false" /></div>',
+            iconSize: [planeIconSize, planeIconSize],
+            iconAnchor: [planeIconAnchor, planeIconAnchor],
+        });
+    }
+
+    var lastIdx = pathData.length - 1;
+    var planeMarker = L.marker(
+        [pathData[lastIdx].lat, pathData[lastIdx].lng],
+        { icon: makePlaneIcon(pathData[lastIdx].bearing), zIndexOffset: 1000 }
+    ).addTo(map);
+
+    function updateTrail(idx) {
+        var coords = pathData.slice(0, idx + 1).map(function (p) {
+            return [p.lat, p.lng];
+        });
+        trailLine.setLatLngs(coords);
+        var p = pathData[idx];
+        planeMarker.setLatLng([p.lat, p.lng]);
+        planeMarker.setIcon(makePlaneIcon(p.bearing));
+        var label = document.getElementById(controlId + "-label");
+        if (label) {
+            label.textContent = p.label;
+        }
+    }
+
+    L.Control.AerolakeTime = L.Control.extend({
+        options: { position: "bottomleft" },
+        onAdd: function () {
+            var container = L.DomUtil.create("div", "aerolake-time-control");
+            container.innerHTML =
+                '<div id="' + controlId + '-label" class="aerolake-time-label"></div>' +
+                '<input type="range" id="' + controlId + '-slider" ' +
+                'min="0" max="' +
+                lastIdx +
+                '" value="' +
+                lastIdx +
+                '" step="1" />';
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.disableScrollPropagation(container);
+            return container;
+        },
+    });
+    map.addControl(new L.Control.AerolakeTime());
+
+    updateTrail(lastIdx);
+
+    var slider = document.getElementById(controlId + "-slider");
+    if (slider) {
+        slider.addEventListener("input", function (e) {
+            updateTrail(parseInt(e.target.value, 10));
+        });
+    }
+{% endmacro %}

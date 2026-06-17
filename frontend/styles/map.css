@@ -1,0 +1,39 @@
+.aerolake-plane-marker.leaflet-div-icon {
+    background: transparent !important;
+    border: none !important;
+}
+
+.aerolake-plane-rotate {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.aerolake-plane-img {
+    display: block;
+    filter: brightness(0);
+    user-select: none;
+}
+
+.aerolake-time-control {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    padding: 10px 14px;
+    min-width: 280px;
+}
+
+.aerolake-time-label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #1e293b;
+}
+
+.aerolake-time-control input[type="range"] {
+    width: 100%;
+    margin: 0;
+}

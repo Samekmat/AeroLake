@@ -29,7 +29,7 @@ cp .env.example .env
 Aby odpalić dashboard analityczny lokalnie:
 
 ```bash
-uv run streamlit run frontend/app.py
+uv run streamlit run streamlit_app.py
 ```
 Aplikacja będzie dostępna w przeglądarce pod adresem: `http://localhost:8501`
 

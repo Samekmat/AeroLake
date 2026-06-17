@@ -1,17 +1,20 @@
-import sys
-from datetime import date, datetime
+import importlib.util
 from pathlib import Path
+
+_spec = importlib.util.spec_from_file_location(
+    "frontend._path",
+    Path(__file__).with_name("_path.py"),
+)
+_path = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_path)
+
+from datetime import date, datetime
 
 import streamlit as st
 
 from frontend import data_loader
 from frontend.components import analytics, flights, map_view
 from frontend.styles import inject_streamlit_css
-
-ROOT_DIR = Path(__file__).resolve().parent.parent
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
-
 
 st.set_page_config(
     page_title="AeroLake",

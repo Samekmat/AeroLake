@@ -18,6 +18,16 @@ class Config:
     WEATHER_CONTAINER = "open-weather-map"
 
     @classmethod
+    def validate_storage(cls):
+        """Validates Azure Blob Storage configuration (frontend / read-only paths)."""
+        if not cls.AZURE_STORAGE_CONNECTION_STRING:
+            raise ValueError(
+                "Critical configuration error: Missing environment variable: "
+                "AZURE_STORAGE_CONNECTION_STRING"
+            )
+        logging.info("Azure storage configuration validated successfully.")
+
+    @classmethod
     def validate(cls):
         """Validates that all required environment variables are set."""
         missing = []

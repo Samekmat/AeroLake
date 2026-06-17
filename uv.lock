@@ -13,7 +13,7 @@ resolution-markers = [
 [[package]]
 name = "aerolake"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "azure-functions" },
     { name = "azure-storage-blob" },

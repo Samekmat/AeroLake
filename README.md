@@ -72,33 +72,50 @@ uv run ruff format .
 
 ```text
 AeroLake/
-├── data_pipeline/               # Logika przetwarzania danych Silver
-│   ├── azure_io.py              # Operacje wejścia-wyjścia na Azure Blob Storage
-│   ├── polars_helpers.py        # Helpery wyrównywania schematów Polars
-│   ├── transformers.py          # Logika czyszczenia schedules, flights, weather
-│   ├── api_client.py            # Klient HTTP dla AIRLABS API
-│   ├── data_processor.py        # Główny koordynator/orchestrator pipeline'u
-│   └── data/                    # Lokalna kopia czystych Parquetów (zignorowana w Git)
-├── frontend/                    # Warstwa Wizualizacji (Streamlit)
-│   ├── app.py                   # Główny plik aplikacji i interfejs UI
-│   ├── components/              # Komponenty wielokrotnego użytku (wykresy, tabele)
-│   └── data_loader.py           # Integracja z DuckDB do odczytu z Azure Blob Storage
-├── core/                        # Współdzielona logika dla całego systemu
-│   ├── config.py                # Walidacja zmiennych środowiskowych
+├── .github/                     # Konfiguracja CI/CD (GitHub Actions)
+│   └── workflows/
+│       └── ci.yml               # Walidacja testów i jakości kodu przy Pull Requestach
+├── .streamlit/                  # Konfiguracja wyglądu i zachowania Streamlit
+│   └── config.toml              # Plik konfiguracyjny Streamlit (porty, motyw itp.)
+├── data_pipeline/               # Pobieranie surowych danych(Bronze) oraz przetwarzanie danych Silver i Gold
+│   ├── api_client.py            # Klient HTTP dla zewnętrznych API (np. AirLabs)
+│   ├── azure_io.py              # Operacje odczytu/zapisu na Azure Blob Storage
+│   ├── polars_helpers.py        # Narzędzia pomocnicze Polars (np. dopasowanie schematów)
+│   ├── transformers.py          # Logika czyszczenia danych (schedules, flights, weather)
+│   ├── ingest_airlabs.py        # Funkcje pobierania rozkładów lotów oraz lotów na żywo
+│   ├── ingest_weather.py        # Funkcje pobierania obserwacji pogodowych (OpenWeatherMap)
+│   ├── data_processor.py        # Koordynator przetwarzania warstwy Silver
+│   ├── gold_processor.py        # Koordynator obliczania i łączenia danych w warstwie Gold
+├── frontend/                    # Warstwa wizualizacji i interfejsu (Streamlit)
+│   ├── app.py                   # Główny interfejs dashboardu i nawigacja
+│   ├── components/              # Komponenty analityczne i prezentacyjne
+│   │   ├── analytics.py         # Wykresy trendów, opóźnień i wskaźników KPI
+│   │   ├── flights.py           # Tabela lotów na żywo, statusy oraz opóźnienia
+│   │   └── map_view.py          # Mapa lotów na bazie biblioteki Leaflet z trasami
+│   ├── styles/                  # Style CSS i szablony JS
+│   │   ├── map.css              # Customowe style dla mapy lotów
+│   │   ├── sidebar.css          # Style paska bocznego ustawień
+│   │   └── flight_time_slider.js.j2 # Skrypt JS do osi czasu lotów
+│   ├── data_loader.py           # Zapytania SQL przez DuckDB do Azure Blob Storage
+│   └── _path.py                 # Pomocnik rozwiązywania ścieżek importu w Streamlit
+├── core/                        # Współdzielone definicje i ustawienia systemowe
+│   ├── config.py                # Definicje, walidacja i ładowanie zmiennych środowiskowych
 │   └── models.py                # Kontrakty danych i modele Pydantic
 ├── tests/                       # Testy automatyczne (Pytest)
-│   ├── test_api_client.py       # Testy API (z użyciem mockowania)
-│   ├── test_data_processor.py   # Testy transformacji danych
-│   └── test_frontend.py         # Testy wczytywania i widoków
-├── .env.example                 # Szablon wymaganych zmiennych środowiskowych
-├── .gitignore                   # Pliki ignorowane przez system kontroli wersji
-├── .funcignore                  # Wykluczenia plików przed deployem na Azure
-├── .python-version              # Deklaracja wersji Pythona dla narzędzia uv (np. 3.13)
-├── function_app.py              # Główny punkt wejścia dla Azure Functions
-├── host.json                    # Konfiguracja runtime Azure Functions
-├── local.settings.json          # Lokalne zmienne środowiskowe dla Azure Functions (ignorowane)
-├── pyproject.toml               # Główna konfiguracja projektu, zależności i linterów (Ruff)
-├── uv.lock                      # Plik lockujący precyzyjne wersje pakietów (dla powtarzalności)
+│   ├── test_api_client.py       # Testy mockowania API AirLabs
+│   ├── test_data_processor.py   # Testy transformacji danych warstwy Silver
+│   ├── test_frontend.py         # Testy ładowania danych w panelu Streamlit
+│   └── test_gold_processor.py   # Testy agregacji analitycznych w warstwie Gold
+├── .env.example                 # Szablon konfiguracji zmiennych środowiskowych
+├── .gitignore                   # Konfiguracja ignorowania plików w repozytorium Git
+├── .funcignore                  # Filtry wykluczeń plików podczas deployu do Azure
+├── .python-version              # Specyfikacja wersji języka Python (np. 3.13)
+├── function_app.py              # Główny punkt startowy wyzwalaczy Azure Functions v2
+├── host.json                    # Konfiguracja środowiska uruchomieniowego Azure Functions
+├── local.settings.json          # Zmienne środowiskowe lokalnego runtime Azure Functions
+├── pyproject.toml               # Metadane projektu, zależności oraz konfiguracja Ruff
+├── streamlit_app.py             # Pomocniczy launcher aplikacji Streamlit w głównym katalogu
+├── uv.lock                      # Precyzyjne wersje pakietów i zależności projektu
 └── README.md                    # Dokumentacja główna projektu
 ```
 

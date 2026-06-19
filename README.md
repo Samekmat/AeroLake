@@ -173,13 +173,13 @@ graph TD
 Oto krótkie nagrania prezentujące funkcjonalności naszej aplikacji analitycznej:
 
 ### Analytics
-[Obejrzyj nagranie: Analytics](https://github.com/Samekmat/AeroLake/blob/main/docs/videos/analitics.mov)
+https://github.com/Samekmat/AeroLake/raw/main/docs/videos/analitics.mov
 
 ### Flights Archive
-[Obejrzyj nagranie: Flights Archive](https://github.com/Samekmat/AeroLake/blob/main/docs/videos/flights_archive.mov)
+https://github.com/Samekmat/AeroLake/raw/main/docs/videos/flights_archive.mov
 
 ### Flights Today
-[Obejrzyj nagranie: Flights Today](https://github.com/Samekmat/AeroLake/blob/main/docs/videos/fligts_today.mov)
+https://github.com/Samekmat/AeroLake/raw/main/docs/videos/fligts_today.mov
 
 ### Map
-[Obejrzyj nagranie: Map](https://github.com/Samekmat/AeroLake/blob/main/docs/videos/map.mov)
+https://github.com/Samekmat/AeroLake/raw/main/docs/videos/map.mov

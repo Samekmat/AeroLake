@@ -22,4 +22,4 @@ jobs:
       - name: Run Ruff Formatter check
         run: uv run ruff format --check .
       - name: Run tests
-        run: echo "Uruchamianie testów i linterów..."
+        run: uv run pytest tests/ -v

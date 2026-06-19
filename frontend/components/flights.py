@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 import streamlit as st
 
 DEPARTURE_COLUMNS = [
@@ -48,7 +48,7 @@ ARRIVAL_COLUMN_LABELS = {
 }
 
 
-def _column_config(df: pd.DataFrame, labels: dict[str, str]) -> dict[str, st.column_config.Column]:
+def _column_config(df: pl.DataFrame, labels: dict[str, str]) -> dict[str, st.column_config.Column]:
     return {
         col: st.column_config.Column(label=label)
         for col, label in labels.items()
@@ -56,26 +56,33 @@ def _column_config(df: pd.DataFrame, labels: dict[str, str]) -> dict[str, st.col
     }
 
 
-def _apply_text_filter(df: pd.DataFrame, column: str, value: str) -> pd.DataFrame:
-    if df.empty or not value or column not in df.columns:
+def _contains_insensitive(column: str, value: str) -> pl.Expr:
+    return (
+        pl.col(column).cast(pl.String).str.to_lowercase().str.contains(value.lower(), literal=True)
+    )
+
+
+def _apply_text_filter(df: pl.DataFrame, column: str, value: str) -> pl.DataFrame:
+    if df.is_empty() or not value or column not in df.columns:
         return df
-    return df[df[column].astype(str).str.contains(value, case=False, na=False)]
+    return df.filter(_contains_insensitive(column, value))
 
 
 def _apply_airport_filter(
-    df: pd.DataFrame, code_column: str, name_column: str, value: str
-) -> pd.DataFrame:
-    if df.empty or not value:
+    df: pl.DataFrame, code_column: str, name_column: str, value: str
+) -> pl.DataFrame:
+    if df.is_empty() or not value:
         return df
 
-    match = df[code_column].astype(str).str.contains(value, case=False, na=False)
+    code_match = _contains_insensitive(code_column, value)
     if name_column in df.columns:
-        match |= df[name_column].astype(str).str.contains(value, case=False, na=False)
-    return df[match]
+        name_match = _contains_insensitive(name_column, value)
+        return df.filter(code_match | name_match)
+    return df.filter(code_match)
 
 
 def _render_flight_table(
-    df: pd.DataFrame,
+    df: pl.DataFrame,
     *,
     title: str,
     sort_column: str,
@@ -90,19 +97,19 @@ def _render_flight_table(
     csv_key: str,
 ) -> None:
     st.subheader(title)
-    if df.empty:
+    if df.is_empty():
         st.info(empty_message)
         return
 
-    display_df = df.copy()
+    display_df = df
     if sort_column in display_df.columns:
-        display_df = display_df.sort_values(sort_column, ascending=False)
+        display_df = display_df.sort(sort_column, descending=True)
     display_df = _apply_text_filter(display_df, "airline_name", airline_filter)
     display_df = _apply_airport_filter(
         display_df, airport_code_column, airport_name_column, airport_filter
     )
 
-    visible = display_df[[col for col in columns if col in display_df.columns]]
+    visible = display_df.select([col for col in columns if col in display_df.columns])
     st.dataframe(
         visible,
         use_container_width=True,
@@ -111,17 +118,17 @@ def _render_flight_table(
     )
     st.download_button(
         "Pobierz CSV",
-        data=visible.to_csv(index=False).encode("utf-8"),
+        data=visible.write_csv().encode("utf-8"),
         file_name=file_name,
         mime="text/csv",
         key=csv_key,
     )
-    st.caption(f"Liczba lotów: {len(visible)}")
+    st.caption(f"Liczba lotów: {visible.height}")
 
 
 def render(
-    schedules_df: pd.DataFrame,
-    arrivals_df: pd.DataFrame,
+    schedules_df: pl.DataFrame,
+    arrivals_df: pl.DataFrame,
     airline_filter: str,
     destination_filter: str,
     caption: str | None = None,

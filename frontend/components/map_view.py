@@ -1,12 +1,12 @@
 import math
 
 import folium
-import pandas as pd
+import polars as pl
 import streamlit as st
 from branca.element import MacroElement
 from streamlit_folium import st_folium
 
-from frontend.data_loader import KRK_LAT, KRK_LNG, pick_flight_track, to_polars
+from frontend.data_loader import KRK_LAT, KRK_LNG, pick_flight_track
 from frontend.styles import folium_style_element, load_script_template
 
 DEFAULT_MAP_TILES = "CartoDB positron"
@@ -34,9 +34,9 @@ class _FlightTimeSlider(MacroElement):
         self.bearing_offset = PLANE_ICON_BEARING_OFFSET
 
 
-def _track_map_bounds(path_df: pd.DataFrame, padding_ratio: float = 0.15) -> list[list[float]]:
-    lats = path_df["lat"].tolist() + [KRK_LAT]
-    lons = path_df["lng"].tolist() + [KRK_LNG]
+def _track_map_bounds(path_df: pl.DataFrame, padding_ratio: float = 0.15) -> list[list[float]]:
+    lats = path_df["lat"].to_list() + [KRK_LAT]
+    lons = path_df["lng"].to_list() + [KRK_LNG]
     lat_min, lat_max = min(lats), max(lats)
     lon_min, lon_max = min(lons), max(lons)
     lat_pad = max((lat_max - lat_min) * padding_ratio, 0.08)
@@ -55,30 +55,30 @@ def _bearing_deg(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return (math.degrees(math.atan2(x, y)) + 360) % 360
 
 
-def _bearing_for_row(ordered: pd.DataFrame, index: int) -> float:
-    row = ordered.iloc[index]
+def _bearing_for_row(rows: list[dict], index: int) -> float:
+    row = rows[index]
 
     if index > 0:
-        prev = ordered.iloc[index - 1]
+        prev = rows[index - 1]
         return _bearing_deg(prev["lat"], prev["lng"], row["lat"], row["lng"])
 
-    if index + 1 < len(ordered):
-        nxt = ordered.iloc[index + 1]
+    if index + 1 < len(rows):
+        nxt = rows[index + 1]
         return _bearing_deg(row["lat"], row["lng"], nxt["lat"], nxt["lng"])
 
     return 0.0
 
 
-def _path_points(path_df: pd.DataFrame) -> list[dict]:
-    ordered = path_df.sort_values("time_bucket").reset_index(drop=True)
+def _path_points(path_df: pl.DataFrame) -> list[dict]:
+    rows = path_df.sort("time_bucket").to_dicts()
     return [
         {
             "lat": float(row["lat"]),
             "lng": float(row["lng"]),
             "label": str(row["time_label"]),
-            "bearing": _bearing_for_row(ordered, index),
+            "bearing": _bearing_for_row(rows, index),
         }
-        for index, row in ordered.iterrows()
+        for index, row in enumerate(rows)
     ]
 
 
@@ -111,7 +111,7 @@ def _build_krk_map() -> folium.Map:
     return folium_map
 
 
-def _build_track_map(path_df: pd.DataFrame, flight_code: str) -> folium.Map:
+def _build_track_map(path_df: pl.DataFrame, flight_code: str) -> folium.Map:
     points = _path_points(path_df)
     last_point = points[-1]
 
@@ -149,7 +149,7 @@ def _show_map(folium_map: folium.Map, map_key: str) -> None:
     )
 
 
-def render(flights_df: pd.DataFrame, arrivals_df: pd.DataFrame):
+def render(flights_df: pl.DataFrame, arrivals_df: pl.DataFrame):
     st.subheader("Mapa lotu")
 
     selected_flight = (
@@ -167,13 +167,13 @@ def render(flights_df: pd.DataFrame, arrivals_df: pd.DataFrame):
         _show_map(_build_krk_map(), map_key="krk_map")
         return
 
-    track_pl = pick_flight_track(to_polars(flights_df), to_polars(arrivals_df), selected_flight)
-    if track_pl.is_empty():
+    track = pick_flight_track(flights_df, arrivals_df, selected_flight)
+    if track.is_empty():
         st.info(f"Brak danych trasy dla lotu {selected_flight}.")
         _show_map(_build_krk_map(), map_key="krk_map")
         return
 
     _show_map(
-        _build_track_map(track_pl.to_pandas(), selected_flight),
+        _build_track_map(track, selected_flight),
         map_key=f"track_{selected_flight}",
     )

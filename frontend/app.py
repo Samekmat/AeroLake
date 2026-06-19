@@ -8,9 +8,24 @@ _spec = importlib.util.spec_from_file_location(
 _path = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_path)
 
+import sys
 from datetime import date, datetime
 
 import streamlit as st
+
+
+def _ensure_fresh_frontend_imports() -> None:
+    """Drop cached frontend modules after refactors (Streamlit keeps stale imports)."""
+    cached_loader = sys.modules.get("frontend.data_loader")
+    if cached_loader is not None and hasattr(cached_loader, "filter_dataframe_by_today"):
+        return
+
+    for module_name in list(sys.modules):
+        if module_name.startswith("frontend.") and not module_name.endswith("._path"):
+            del sys.modules[module_name]
+
+
+_ensure_fresh_frontend_imports()
 
 from frontend import data_loader
 from frontend.components import analytics, flights, map_view
@@ -52,7 +67,7 @@ def _reset_flight_filters(include_dates: bool) -> None:
 
 
 def _column_stat(df, column: str, func, default=0):
-    if df.empty or column not in df.columns:
+    if df.is_empty() or column not in df.columns:
         return default
     return func(df[column])
 
@@ -151,10 +166,10 @@ except Exception as exc:
     st.error(f"Nie udało się wczytać danych: {exc}")
     st.stop()
 
-flights_schedules_df = data_loader.filter_pandas_dataframe_by_today(
+flights_schedules_df = data_loader.filter_dataframe_by_today(
     schedules_all, "scheduled_departure_utc", on_date=today
 )
-flights_arrivals_df = data_loader.filter_pandas_dataframe_by_today(
+flights_arrivals_df = data_loader.filter_dataframe_by_today(
     arrivals_all, "last_updated_utc", on_date=today
 )
 
@@ -175,21 +190,21 @@ elif current_tab == tab_historical:
         show_dates=True
     )
 
-    schedules_historical = data_loader.filter_pandas_dataframe_by_date(
+    schedules_historical = data_loader.filter_dataframe_by_date(
         schedules_all, "scheduled_departure_utc", start_date, end_date
     )
-    arrivals_historical = data_loader.filter_pandas_dataframe_by_date(
+    arrivals_historical = data_loader.filter_dataframe_by_date(
         arrivals_all, "last_updated_utc", start_date, end_date
     )
 
     avg_delay = _column_stat(schedules_historical, "departure_delay_mins", lambda col: col.mean())
     active_routes_count = _column_stat(
-        schedules_historical, "arrival_airport", lambda col: col.nunique()
+        schedules_historical, "arrival_airport", lambda col: col.n_unique()
     )
 
     kpi_cols = st.columns(4)
-    kpi_cols[0].metric("Odloty z Krakowa", len(schedules_historical))
-    kpi_cols[1].metric("Przyloty do Krakowa", len(arrivals_historical))
+    kpi_cols[0].metric("Odloty z Krakowa", schedules_historical.height)
+    kpi_cols[1].metric("Przyloty do Krakowa", arrivals_historical.height)
     kpi_cols[2].metric("Średnie opóźnienie (min)", f"{avg_delay:.1f}" if avg_delay else "0.0")
     kpi_cols[3].metric("Aktywne kierunki", active_routes_count)
 

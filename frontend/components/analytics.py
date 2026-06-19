@@ -1,12 +1,8 @@
-import pandas as pd
 import plotly.express as px
+import polars as pl
 import streamlit as st
 
-from frontend.data_loader import (
-    compute_delays_by_hour,
-    compute_weekday_patterns,
-    to_polars,
-)
+from frontend.data_loader import compute_delays_by_hour, compute_weekday_patterns
 
 WEEKDAY_ORDER = [
     "Poniedziałek",
@@ -19,17 +15,16 @@ WEEKDAY_ORDER = [
 ]
 
 
-def _render_delays_by_hour(schedules_df: pd.DataFrame):
+def _render_delays_by_hour(schedules_df: pl.DataFrame):
     st.subheader("Średnie opóźnienia")
-    delays_df = compute_delays_by_hour(to_polars(schedules_df))
+    delays_df = compute_delays_by_hour(schedules_df)
 
     if delays_df.is_empty():
         st.info("Brak danych o opóźnieniach.")
         return
 
-    chart_df = delays_df.to_pandas()
     fig = px.bar(
-        chart_df,
+        delays_df,
         x="departure_hour_utc",
         y="avg_delay_mins",
         text="flight_count",
@@ -44,13 +39,13 @@ def _render_delays_by_hour(schedules_df: pd.DataFrame):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def _render_top_destinations(routes_df: pd.DataFrame):
+def _render_top_destinations(routes_df: pl.DataFrame):
     st.subheader("Najpopularniejsze kierunki")
-    if routes_df.empty:
+    if routes_df.is_empty():
         st.info("Brak danych o trasach.")
         return
 
-    top_routes = routes_df.sort_values("flight_count", ascending=False).head(10)
+    top_routes = routes_df.sort("flight_count", descending=True).head(10)
     fig = px.bar(
         top_routes,
         x="arrival_airport",
@@ -61,15 +56,14 @@ def _render_top_destinations(routes_df: pd.DataFrame):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def _render_weekday_patterns(schedules_df: pd.DataFrame, arrivals_df: pd.DataFrame):
+def _render_weekday_patterns(schedules_df: pl.DataFrame, arrivals_df: pl.DataFrame):
     st.subheader("Rozkład lotów według dnia tygodnia")
-    weekday_df = compute_weekday_patterns(to_polars(schedules_df), to_polars(arrivals_df))
+    weekday_df = compute_weekday_patterns(schedules_df, arrivals_df)
 
     if weekday_df.is_empty():
         st.info("Brak danych do analizy dni tygodnia.")
         return
 
-    chart_df = weekday_df.to_pandas()
     base_chart_kwargs = {
         "x": "weekday_label",
         "color": "direction",
@@ -80,7 +74,7 @@ def _render_weekday_patterns(schedules_df: pd.DataFrame, arrivals_df: pd.DataFra
     avg_col, sum_col = st.columns(2)
     with avg_col:
         avg_fig = px.bar(
-            chart_df,
+            weekday_df,
             y="avg_flights_per_day",
             title="Średnia ilość lotów/dzień",
             labels={
@@ -94,7 +88,7 @@ def _render_weekday_patterns(schedules_df: pd.DataFrame, arrivals_df: pd.DataFra
 
     with sum_col:
         sum_fig = px.bar(
-            chart_df,
+            weekday_df,
             y="flight_count",
             title="Suma lotów/dzień",
             labels={
@@ -107,13 +101,13 @@ def _render_weekday_patterns(schedules_df: pd.DataFrame, arrivals_df: pd.DataFra
         st.plotly_chart(sum_fig, use_container_width=True)
 
 
-def _render_airline_performance(airline_perf_df: pd.DataFrame):
+def _render_airline_performance(airline_perf_df: pl.DataFrame):
     st.subheader("Wydajność linii lotniczych")
-    if airline_perf_df.empty:
+    if airline_perf_df.is_empty():
         st.info("Brak danych o liniach lotniczych.")
         return
 
-    top_airlines = airline_perf_df.sort_values("total_flights", ascending=False).head(15)
+    top_airlines = airline_perf_df.sort("total_flights", descending=True).head(15)
     fig = px.bar(
         top_airlines,
         x="airline_name",
@@ -130,9 +124,9 @@ def _render_airline_performance(airline_perf_df: pd.DataFrame):
     st.plotly_chart(fig, use_container_width=True)
 
 
-def _render_weather_impact(weather_impact_df: pd.DataFrame):
+def _render_weather_impact(weather_impact_df: pl.DataFrame):
     st.subheader("Wpływ pogody na opóźnienia")
-    if weather_impact_df.empty:
+    if weather_impact_df.is_empty():
         st.info("Brak danych o wpływie pogody.")
         return
 
@@ -141,8 +135,8 @@ def _render_weather_impact(weather_impact_df: pd.DataFrame):
         ("wind_speed_mps", "Prędkość wiatru"),
         ("visibility_level", "Widoczność"),
     ]:
-        subset = weather_impact_df[weather_impact_df["metric"] == metric]
-        if subset.empty:
+        subset = weather_impact_df.filter(pl.col("metric") == metric)
+        if subset.is_empty():
             continue
 
         fig = px.bar(
@@ -162,11 +156,11 @@ def _render_weather_impact(weather_impact_df: pd.DataFrame):
 
 
 def render(
-    schedules_df: pd.DataFrame,
-    arrivals_df: pd.DataFrame,
-    routes_df: pd.DataFrame,
-    airline_perf_df: pd.DataFrame,
-    weather_impact_df: pd.DataFrame,
+    schedules_df: pl.DataFrame,
+    arrivals_df: pl.DataFrame,
+    routes_df: pl.DataFrame,
+    airline_perf_df: pl.DataFrame,
+    weather_impact_df: pl.DataFrame,
 ):
     st.subheader("Analiza zależności")
     _render_delays_by_hour(schedules_df)

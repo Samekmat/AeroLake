@@ -2,7 +2,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-import pandas as pd
 import polars as pl
 import streamlit as st
 
@@ -26,10 +25,6 @@ GOLD_DATASETS = (
     "airline_performance",
     "weather_impact",
 )
-
-
-def to_polars(df: pd.DataFrame) -> pl.DataFrame:
-    return pl.from_pandas(df) if not df.empty else pl.DataFrame()
 
 
 @st.cache_resource
@@ -162,38 +157,41 @@ def transform_raw_arrivals(raw_df: pl.DataFrame, airports_df: pl.DataFrame) -> p
     return df.unique(subset=["flight_code", "last_updated_utc"], keep="last")
 
 
-def _pandas_local_dates(series: pd.Series, tz: str = "Europe/Warsaw") -> pd.Series:
-    return pd.to_datetime(series, utc=True, errors="coerce").dt.tz_convert(tz).dt.date
+def _local_date_expr(date_column: str, tz: str) -> pl.Expr:
+    return (
+        pl.col(date_column)
+        .cast(pl.Datetime(time_unit="us", time_zone="UTC"))
+        .dt.convert_time_zone(tz)
+        .dt.date()
+    )
 
 
-def filter_pandas_dataframe_by_date(
-    df,
+def filter_dataframe_by_date(
+    df: pl.DataFrame,
     date_column: str,
     start_date: date,
     end_date: date,
     tz: str = "Europe/Warsaw",
-):
-    """Filters a pandas DataFrame by inclusive local calendar date range."""
-    if df is None or len(df) == 0 or date_column not in df.columns:
-        return df
+) -> pl.DataFrame:
+    """Filters a DataFrame by inclusive local calendar date range."""
+    if df is None or df.is_empty() or date_column not in df.columns:
+        return df if df is not None else pl.DataFrame()
 
     if start_date > end_date:
-        return df.iloc[0:0].copy()
+        return df.head(0)
 
-    local_dates = _pandas_local_dates(df[date_column], tz)
-    mask = (local_dates >= start_date) & (local_dates <= end_date)
-    return df.loc[mask].copy()
+    return df.filter(_local_date_expr(date_column, tz).is_between(start_date, end_date))
 
 
-def filter_pandas_dataframe_by_today(
-    df,
+def filter_dataframe_by_today(
+    df: pl.DataFrame,
     date_column: str,
     on_date: date | None = None,
     tz: str = "Europe/Warsaw",
-):
-    """Filters a pandas DataFrame to a single local calendar day."""
+) -> pl.DataFrame:
+    """Filters a DataFrame to a single local calendar day."""
     target_date = on_date or datetime.now(ZoneInfo(tz)).date()
-    return filter_pandas_dataframe_by_date(df, date_column, target_date, target_date, tz)
+    return filter_dataframe_by_date(df, date_column, target_date, target_date, tz)
 
 
 def compute_delays_by_hour(schedules_df: pl.DataFrame) -> pl.DataFrame:
@@ -314,15 +312,16 @@ def _filter_position_jumps(df: pl.DataFrame, max_km: float) -> pl.DataFrame:
     if df.is_empty() or df.height <= 1:
         return df
 
-    pdf = df.sort("last_updated_utc").to_pandas()
+    sorted_df = df.sort("last_updated_utc")
+    rows = sorted_df.select(["lat", "lng"]).to_dicts()
     keep_indices = [0]
-    for i in range(1, len(pdf)):
-        prev = pdf.iloc[i - 1]
-        cur = pdf.iloc[i]
+    for index in range(1, len(rows)):
+        prev = rows[keep_indices[-1]]
+        cur = rows[index]
         distance = _haversine_km(prev["lat"], prev["lng"], cur["lat"], cur["lng"])
         if distance <= max_km:
-            keep_indices.append(i)
-    return pl.from_pandas(pdf.iloc[keep_indices].reset_index(drop=True))
+            keep_indices.append(index)
+    return sorted_df.with_row_index("_row").filter(pl.col("_row").is_in(keep_indices)).drop("_row")
 
 
 def _latest_flight_segment(df: pl.DataFrame, max_gap_hours: float) -> pl.DataFrame:
@@ -444,14 +443,14 @@ def _enrich_arrivals_with_airlines(arrivals_df: pl.DataFrame) -> pl.DataFrame:
 def load_schedules():
     client = get_cached_blob_client()
     today = datetime.now(LOCAL_TZ).date()
-    return read_silver_partition_range(client, "schedules", DATA_START_DATE, today).to_pandas()
+    return read_silver_partition_range(client, "schedules", DATA_START_DATE, today)
 
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner="Wczytywanie pozycji live...")
 def load_live_flights():
     client = get_cached_blob_client()
     today = datetime.now(LOCAL_TZ).date()
-    return read_silver_partition_range(client, "flights", DATA_START_DATE, today).to_pandas()
+    return read_silver_partition_range(client, "flights", DATA_START_DATE, today)
 
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner="Wczytywanie przylotów...")
@@ -460,7 +459,7 @@ def load_arrivals():
     today = datetime.now(LOCAL_TZ).date()
     raw_df = read_raw_arrivals_partition_range(client, DATA_START_DATE, today)
     arrivals_df = transform_raw_arrivals(raw_df, _load_airports_dictionary())
-    return _enrich_arrivals_with_airlines(arrivals_df).to_pandas()
+    return _enrich_arrivals_with_airlines(arrivals_df)
 
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner=False)
@@ -471,7 +470,7 @@ def load_gold(dataset_name: str):
     client = get_cached_blob_client()
     return read_parquet_blobs_to_dataframe(
         client, Config.CLEAN_CONTAINER, f"gold/{dataset_name}.parquet"
-    ).to_pandas()
+    )
 
 
 def clear_cache():

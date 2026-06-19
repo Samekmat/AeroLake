@@ -4,12 +4,13 @@ from datetime import datetime
 from io import BytesIO
 from zoneinfo import ZoneInfo
 
-import pandas as pd
+import polars as pl
 import requests
 from azure.core.exceptions import ResourceExistsError
 from azure.storage.blob import BlobServiceClient
 
 from core.config import Config
+from data_pipeline.polars_helpers import flatten_dict
 
 TIMEZONE = "Europe/Warsaw"
 OUTPUT_FORMAT = "parquet"
@@ -25,9 +26,10 @@ def save_parquet(container, blob_name: str, data: dict):
     records = data.get("response", data)
     if not records:
         records = []
-    df = pd.json_normalize(records)
+    flat_records = [flatten_dict(r) for r in records] if records else []
+    df = pl.DataFrame(flat_records)
     buffer = BytesIO()
-    df.to_parquet(buffer, index=False)
+    df.write_parquet(buffer)
     buffer.seek(0)
     container.upload_blob(name=blob_name, data=buffer.getvalue(), overwrite=True)
 

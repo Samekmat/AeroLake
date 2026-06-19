@@ -167,3 +167,19 @@ graph TD
     style Stream fill:#ff4b4b,stroke:#fff,stroke-width:2px,color:#fff
     style Duck fill:#800000,stroke:#fff,stroke-width:2px,color:#fff
 ```
+
+## Prezentacja Aplikacji
+
+Oto krótkie nagrania prezentujące funkcjonalności naszej aplikacji analitycznej:
+
+### Analytics
+<video src="docs/videos/analitics.mov" controls="controls" style="max-width: 100%;"></video>
+
+### Flights Archive
+<video src="docs/videos/flights_archive.mov" controls="controls" style="max-width: 100%;"></video>
+
+### Flights Today
+<video src="docs/videos/fligts_today.mov" controls="controls" style="max-width: 100%;"></video>
+
+### Map
+<video src="docs/videos/map.mov" controls="controls" style="max-width: 100%;"></video>

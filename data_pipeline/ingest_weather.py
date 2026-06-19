@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from datetime import datetime
 from io import BytesIO
 from zoneinfo import ZoneInfo
@@ -18,8 +17,6 @@ OUTPUT_FORMAT = "parquet"
 CONTAINER_NAME = Config.WEATHER_CONTAINER
 CITIES = {"KRK": "Krakow,PL"}
 
-API_KEY = os.getenv("OPENWEATHER_API_KEY_R") or os.getenv("OPENWEATHER_API_KEY")
-
 
 def save_json(container, blob_name: str, data: dict):
     container.upload_blob(name=blob_name, data=json.dumps(data, ensure_ascii=False), overwrite=True)
@@ -34,7 +31,7 @@ def save_parquet(container, blob_name: str, data: dict):
 
 
 def fetch_and_save_weather(airport_code: str, city_name: str):
-    if not API_KEY:
+    if not Config.OPENWEATHER_API_KEY:
         logging.error("Missing OPENWEATHER_API_KEY!")
         return
 
@@ -42,7 +39,7 @@ def fetch_and_save_weather(airport_code: str, city_name: str):
         weather_url = (
             f"https://api.openweathermap.org/data/2.5/weather"
             f"?q={city_name}"
-            f"&appid={API_KEY}"
+            f"&appid={Config.OPENWEATHER_API_KEY}"
             f"&units=metric"
         )
         response = requests.get(weather_url, timeout=30)

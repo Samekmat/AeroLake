@@ -12,6 +12,7 @@ load_dotenv()
 class Config:
     AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
     AIRLABS_API_KEY = os.getenv("AIRLABS_API_KEY")
+    OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY_R") or os.getenv("OPENWEATHER_API_KEY")
 
     RAW_CONTAINER = "container-for-airlabs-api-timer"
     CLEAN_CONTAINER = "clean-data"
@@ -35,6 +36,8 @@ class Config:
             missing.append("AZURE_STORAGE_CONNECTION_STRING")
         if not cls.AIRLABS_API_KEY:
             missing.append("AIRLABS_API_KEY")
+        if not cls.OPENWEATHER_API_KEY:
+            missing.append("OPENWEATHER_API_KEY")
 
         if missing:
             raise ValueError(
